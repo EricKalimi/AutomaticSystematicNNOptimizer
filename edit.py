@@ -48,7 +48,7 @@ def analyze(
         epochs -= 25 * v
     elif train_accuracy > goal:
         print("MOST LIKELY OVER-FIT (add dropout and regularization)")
-        v = round((train_accuracy - test_acuracy) * scale)
+        v = round((train_accuracy - test_accuracy) * scale)
 
         if v > 1:
             v = 1
