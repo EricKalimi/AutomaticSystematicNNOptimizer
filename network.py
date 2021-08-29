@@ -108,31 +108,26 @@ def train(
     return model
 
 
-def evaluateNN(model, Index_of_Network, X_train, y_train, X_test, y_test):
+def evaluateNN(model, x_train, y_train, x_test, y_test):
     """
 
     :param model:
-    :param Index_of_Network:
-    :param X_train:
+    :param x_train:
     :param y_train:
-    :param X_test:
+    :param x_test:
     :param y_test:
     :return:
     """
     y_train1d = [list(x).index(max(x)) for x in y_train]
     y_test1d = [list(x).index(max(x)) for x in y_test]
 
-    y_hat1 = [list(x).index(max(x)) for x in model.predict(X_train)]
+    y_hat1 = [list(x).index(max(x)) for x in model.predict(x_train)]
     training_accuracy = 100 * accuracy_score(y_train1d, y_hat1)
     print("NN Training Accuracy:", training_accuracy)
-    # cm = tf.math.confusion_matrix(y_train1d, y_hat1)
-    # print(cm)
 
-    y_hat = [list(x).index(max(x)) for x in model.predict(X_test)]
+    y_hat = [list(x).index(max(x)) for x in model.predict(x_test)]
     testing_accuracy = 100 * accuracy_score(y_test1d, y_hat)
     print("NN Testing Accuracy:", testing_accuracy)
-    # cm1 = tf.math.confusion_matrix(y_test1d, y_hat)
-    # print(cm1)
 
     from main import ALL_NETWORKS
 
