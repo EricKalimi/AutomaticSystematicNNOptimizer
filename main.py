@@ -15,8 +15,8 @@ ALL_NETWORKS = []
 List_of_models = []
 num_output_neurons = len(pd.unique(y))
 num_input_neurons = x.shape[1]
-num_of_layers = 10
-nodes_per_layer = 50
+num_of_layers = 1
+nodes_per_layer = 1
 epochs = 100
 activation_function = "sigmoid"
 l2_lambda = 0
@@ -45,11 +45,17 @@ def create_network(
         num_of_layers, nodes_per_layer, activation_function, l2_lambda, dropout_rate
     )
     model = train(model, Index_of_Network, x_train, y_train, epochs)
-    model.summary()
-    return evaluateNN(model, Index_of_Network, x_train, y_train, x_test, y_test)
+    #model.summary()
+    return evaluateNN(model, x_train, y_train, x_test, y_test)
 
 
-for i in range(5):
+for i in range(20):
+    print(f'This is network #{i+1}')
+    print(f'Epochs: {epochs}')
+    print(f'Number of Layers: {num_of_layers}')
+    print(f'Nodes per Layer: {nodes_per_layer}')
+    print(f'L2 Regularization: {l2_lambda}')
+    print(f'Dropout Rate: {dropout_rate}')
     evaluation = create_network(
         epochs,
         num_of_layers,
@@ -77,7 +83,6 @@ for i in range(5):
         dropout_rate,
         exceed_base_model,
     )
-    print(f'This is the {i}th network')
     if good_enough:
         print("This network is complete")
         break
