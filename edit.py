@@ -1,5 +1,19 @@
-scale = 0.2
+import numpy as np
+from scipy import interpolate
 
+x = np.array([i for i in range(26)])
+y = 2 ** (x/5)
+find_new_nodes = interpolate.interp1d(x, y, kind = 'cubic', bounds_error=False, fill_value=(0,max(y)))
+
+z = 5 * ( 1 / (2*np.pi)**.5 / 2 ) * np.e ** (-1 * (y-max(y)/2)**2 )
+find_new_layers = interpolate.interp1d(y, z, kind = 'cubic', bounds_error=False, fill_value= (0, 0))
+
+w = (-y**1.75) / 2 + 215
+find_new_epochs = interpolate.interp1d(y, w, kind = 'cubic', bounds_error=False, fill_value= (215, 0))
+
+x = np.array([i for i in range(29)])
+s = 2 * ( 2 ** x )
+find_new_l2 = interpolate.interp1d(x, s, kind = 'cubic', bounds_error=False, fill_value= (.02, .5))
 
 def analyze(
     epochs,
@@ -26,43 +40,39 @@ def analyze(
     :return:
     """
     good_enough = False
-    made_bigger = False
 
     test_accuracy = evaluation["Testing accuracy"]
     train_accuracy = evaluation["Training accuracy"]
     goal = exceed * base_line
 
-    global scale
-
     if test_accuracy > goal:
         print("NICE NETWORK")
         good_enough = True
-    elif not made_bigger and train_accuracy > goal:
-        print("MOST LIKELY OVER-FIT (make network smaller)")
-        v = round((train_accuracy - test_acuracy) * scale) + 1
+    elif train_accuracy < goal:
+        print(f"NOT TRAINING HIGH ENOUGH ACCURACY (ONLY {train_accuracy} NOT {goal})")
+        percent_error = 100 * (goal - test_accuracy) / test_accuracy
+        v = int(find_new_nodes(percent_error))
+        nodes_per_layer += v
+        print(f"Added {v} nodes per layer (total: {nodes_per_layer})")
 
-        if v > 10:
-            v = 10
-        num_of_layers -= v
-        nodes_per_layer -= 3 * v
-        epochs -= 25 * v
-    elif train_accuracy > goal:
-        print("MOST LIKELY OVER-FIT (add dropout and regularization)")
-        v = round((train_accuracy - test_accuracy) * scale)
+        u = int(find_new_layers(v))
+        num_of_layers += u
+        print(f"Added {u} layers (total: {num_of_layers})")
 
-        if v > 1:
-            v = 1
-        l2_lambda += v / 5
-        dropout_rate += v / 5
-
+        t = int(find_new_epochs(v))
+        epochs += t
+        print(f"Added {t} epochs (total: {epochs})")
     else:
-        print(f"NOT TESTING HIGH ENOUGH ACCURACY (ONLY {test_accuracy} NOT {goal})")
-        v = round((goal - test_accuracy) * scale) + 1
-        if v > 10:
-            v = 10
-        num_of_layers += v
-        nodes_per_layer += 3 * v
-        epochs += 50 * v
+        print("MOST LIKELY OVER-FIT (add dropout and regularization)")
+        percent_difference = 100 * (train_accuracy - test_accuracy) / test_accuracy
+        print(f"Percent Difference: {percent_difference}")
+
+        v = int( find_new_l2(percent_difference) ) /100
+        #l2 ranges from 0 to 1 on a logarithmic scale
+
+        dropout_rate += v
+        print(f"Added {v} to Dropout (total: {dropout_rate})")
+        #dropout_rate += int(v / 5)
 
     return (
         epochs,
